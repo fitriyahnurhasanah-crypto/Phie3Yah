@@ -1,0 +1,6 @@
+{
+  "name": "NaskahSoal",
+  "description": "Aplikasi pembuat naskah soal Ujian Akhir Semester (Pilihan Ganda, PG Kompleks, Benar/Salah, Isian, Esai) lengkap dengan kunci jawaban, materi Kelas 5, dan ekspor cetak PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

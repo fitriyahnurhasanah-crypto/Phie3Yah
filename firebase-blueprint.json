@@ -1,0 +1,188 @@
+{
+  "entities": {
+    "ExamDocument": {
+      "title": "ExamDocument",
+      "description": "A final semester exam manuscript (Naskah Soal UAS) created by a teacher.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner UID"
+        },
+        "title": {
+          "type": "string",
+          "description": "Exam title, e.g., Penilaian Akhir Semester I"
+        },
+        "schoolName": {
+          "type": "string",
+          "description": "School or institution name"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject name, e.g., IPAS, Bahasa Indonesia, Matematika"
+        },
+        "gradeLevel": {
+          "type": "string",
+          "description": "Grade or class label, e.g., Kelas 5 SD"
+        },
+        "semester": {
+          "type": "string",
+          "description": "Semester label, e.g., Semester 1 (Ganjil)"
+        },
+        "academicYear": {
+          "type": "string",
+          "description": "Academic year, e.g., 2026/2027"
+        },
+        "durationMinutes": {
+          "type": "integer",
+          "description": "Exam duration in minutes"
+        },
+        "instructions": {
+          "type": "string",
+          "description": "General exam instructions for students"
+        },
+        "questionCount": {
+          "type": "integer",
+          "description": "Cached count of questions in the exam"
+        },
+        "totalPoints": {
+          "type": "integer",
+          "description": "Cached sum of points across all questions"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()"
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "schoolName",
+        "subject",
+        "gradeLevel",
+        "semester",
+        "academicYear",
+        "durationMinutes",
+        "instructions",
+        "questionCount",
+        "totalPoints",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "QuestionItem": {
+      "title": "QuestionItem",
+      "description": "A single exam question supporting PG, PG Kompleks, Benar/Salah, Isian, and Esai along with its answer key.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated owner UID"
+        },
+        "examId": {
+          "type": "string",
+          "description": "Parent exam document ID"
+        },
+        "orderIndex": {
+          "type": "integer",
+          "description": "Display ordering index within the exam"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "PILIHAN_GANDA",
+            "PILIHAN_GANDA_KOMPLEKS",
+            "BENAR_SALAH",
+            "ISIAN",
+            "ESAI"
+          ],
+          "description": "Question format type"
+        },
+        "prompt": {
+          "type": "string",
+          "description": "Main question stem or instruction"
+        },
+        "options": {
+          "type": "array",
+          "description": "Answer choices for PG and PG Kompleks (max 6)"
+        },
+        "correctIndices": {
+          "type": "array",
+          "description": "Zero-based indices of correct options (max 6)"
+        },
+        "statements": {
+          "type": "array",
+          "description": "Statements list for Benar/Salah questions (max 6)"
+        },
+        "statementAnswers": {
+          "type": "array",
+          "description": "Boolean answers corresponding to each statement (max 6)"
+        },
+        "shortAnswerKey": {
+          "type": "string",
+          "description": "Short answer key for Isian questions"
+        },
+        "essayRubric": {
+          "type": "string",
+          "description": "Model answer and scoring rubric for Esai questions"
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Detailed answer explanation (pembahasan)"
+        },
+        "topicTag": {
+          "type": "string",
+          "description": "Chapter or topic tag"
+        },
+        "points": {
+          "type": "integer",
+          "description": "Maximum points/score weight for this question"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()"
+        }
+      },
+      "required": [
+        "userId",
+        "examId",
+        "orderIndex",
+        "type",
+        "prompt",
+        "options",
+        "correctIndices",
+        "statements",
+        "statementAnswers",
+        "shortAnswerKey",
+        "essayRubric",
+        "explanation",
+        "topicTag",
+        "points",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/exams/{examId}": {
+      "schema": "ExamDocument",
+      "description": "User-owned UAS exam manuscripts"
+    },
+    "/users/{userId}/exams/{examId}/questions/{questionId}": {
+      "schema": "QuestionItem",
+      "description": "Questions belonging to a specific user-owned exam manuscript"
+    }
+  }
+}

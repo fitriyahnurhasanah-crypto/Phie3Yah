@@ -1,0 +1,141 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidExam(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.schoolName is string && data.schoolName.size() <= 200 &&
+             data.subject is string && data.subject.size() >= 1 && data.subject.size() <= 120 &&
+             data.gradeLevel is string && data.gradeLevel.size() <= 60 &&
+             data.semester is string && data.semester.size() <= 60 &&
+             data.academicYear is string && data.academicYear.size() <= 40 &&
+             data.durationMinutes is int && data.durationMinutes >= 5 && data.durationMinutes <= 600 &&
+             data.instructions is string && data.instructions.size() <= 2000 &&
+             data.questionCount is int && data.questionCount >= 0 && data.questionCount <= 500 &&
+             data.totalPoints is int && data.totalPoints >= 0 && data.totalPoints <= 10000;
+    }
+
+    function isValidQuestion(data, userId, examId) {
+      return data.userId is string && data.userId == userId &&
+             data.examId is string && data.examId == examId &&
+             data.orderIndex is int && data.orderIndex >= 0 && data.orderIndex <= 1000 &&
+             data.type in ['PILIHAN_GANDA', 'PILIHAN_GANDA_KOMPLEKS', 'BENAR_SALAH', 'ISIAN', 'ESAI'] &&
+             data.prompt is string && data.prompt.size() >= 1 && data.prompt.size() <= 2000 &&
+             data.options is list && data.options.size() <= 6 && (data.options.size() == 0 || data.options[0] is string) &&
+             data.correctIndices is list && data.correctIndices.size() <= 6 && (data.correctIndices.size() == 0 || data.correctIndices[0] is int) &&
+             data.statements is list && data.statements.size() <= 6 && (data.statements.size() == 0 || data.statements[0] is string) &&
+             data.statementAnswers is list && data.statementAnswers.size() <= 6 && (data.statementAnswers.size() == 0 || data.statementAnswers[0] is bool) &&
+             data.shortAnswerKey is string && data.shortAnswerKey.size() <= 500 &&
+             data.essayRubric is string && data.essayRubric.size() <= 3000 &&
+             data.explanation is string && data.explanation.size() <= 2000 &&
+             data.topicTag is string && data.topicTag.size() <= 120 &&
+             data.points is int && data.points >= 1 && data.points <= 100;
+    }
+
+    match /users/{userId}/exams/{examId} {
+      allow get: if isOwner(userId) && isValidId(examId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(examId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'title', 'schoolName', 'subject', 'gradeLevel',
+                         'semester', 'academicYear', 'durationMinutes', 'instructions',
+                         'questionCount', 'totalPoints', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'title', 'schoolName', 'subject', 'gradeLevel',
+                         'semester', 'academicYear', 'durationMinutes', 'instructions',
+                         'questionCount', 'totalPoints', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       isValidExam(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(examId) &&
+                       isValidExam(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                       (
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'title', 'schoolName', 'subject', 'gradeLevel', 'semester',
+                           'academicYear', 'durationMinutes', 'instructions',
+                           'questionCount', 'totalPoints', 'updatedAt'
+                         ]) ||
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'questionCount', 'totalPoints', 'updatedAt'
+                         ])
+                       );
+
+      allow delete: if isOwner(userId) && isValidId(examId);
+
+      match /questions/{questionId} {
+        allow get: if isOwner(userId) && isValidId(examId) && isValidId(questionId);
+        allow list: if isOwner(userId) && isValidId(examId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(examId) &&
+                         isValidId(questionId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'examId', 'orderIndex', 'type', 'prompt',
+                           'options', 'correctIndices', 'statements', 'statementAnswers',
+                           'shortAnswerKey', 'essayRubric', 'explanation', 'topicTag',
+                           'points', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'examId', 'orderIndex', 'type', 'prompt',
+                           'options', 'correctIndices', 'statements', 'statementAnswers',
+                           'shortAnswerKey', 'essayRubric', 'explanation', 'topicTag',
+                           'points', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidQuestion(incoming(), userId, examId) &&
+                         exists(/databases/$(database)/documents/users/$(userId)/exams/$(examId));
+
+        allow update: if isOwner(userId) &&
+                         isValidId(examId) &&
+                         isValidId(questionId) &&
+                         isValidQuestion(incoming(), userId, examId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().examId == existing().examId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'orderIndex', 'type', 'prompt', 'options', 'correctIndices',
+                           'statements', 'statementAnswers', 'shortAnswerKey', 'essayRubric',
+                           'explanation', 'topicTag', 'points', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(examId) && isValidId(questionId);
+      }
+    }
+  }
+}

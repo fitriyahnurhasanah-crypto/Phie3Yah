@@ -1,0 +1,35 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Exam Sheet Body (white paper inside 66dp safe zone: x 27..77, y 25..83) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,27 L62,27 L73,38 L73,77 C73,79.76 70.76,82 68,82 L34,82 C31.24,82 29,79.76 29,77 L29,32 C29,29.24 31.24,27 34,27 Z" />
+    <!-- Folded Top-Right Paper Corner -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M62,27 L62,38 L73,38 Z" />
+    <!-- Exam Header Bar -->
+    <path
+        android:fillColor="#1A237E"
+        android:pathData="M35,38 L57,38 L57,42.5 L35,42.5 Z" />
+    <!-- Exam Question Lines -->
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M35,48 L65,48 L65,51.5 L35,51.5 Z" />
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M35,56 L61,56 L61,59.5 L35,59.5 Z" />
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M35,64 L54,64 L54,67.5 L35,67.5 Z" />
+    <!-- Amber Gold Seal / Checkmark Badge -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M68,61 A11,11 0 1,0 68,83 A11,11 0 1,0 68,61 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M63.2,72.2 L66.6,75.6 L73.4,68.8 L75.2,70.6 L66.6,79.2 L61.4,74 Z" />
+</vector>
